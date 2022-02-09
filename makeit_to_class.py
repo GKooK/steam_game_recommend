@@ -11,14 +11,14 @@ tf.compat.v1.disable_eager_execution()
 tf.compat.v1.disable_v2_behavior()
 
 ########Temp New User#######
-new_user = np.random.rand(1,5064)
-apply_lambda = lambda x: 1 if x>0.99 else 0
-new_user = new_user.reshape(5064,)
-tt = np.array([apply_lambda(xi) for xi in new_user])
-tt = tt.reshape(1,5064)
-make_random_time = lambda x: random.randint(10, 90) if x==1 else 0
-tt_time = np.array([make_random_time(xi) for xi in tt.reshape(5064,)])
-tt_time.reshape(5064,)
+#new_user = np.random.rand(1,5064)
+#apply_lambda = lambda x: 1 if x>0.99 else 0
+#new_user = new_user.reshape(5064,)
+#tt = np.array([apply_lambda(xi) for xi in new_user])
+#tt = tt.reshape(1,5064)
+#make_random_time = lambda x: random.randint(10, 90) if x==1 else 0
+#tt_time = np.array([make_random_time(xi) for xi in tt.reshape(5064,)])
+#tt_time.reshape(5064,)
 ############################
 class CollaborateFiltering:
     def __init__(self, k = 5):
@@ -119,34 +119,21 @@ class CollaborateFiltering:
         sim_scores = sorted(cos_enum, key=lambda x: x[1], reverse=True)
         sim_user_list = []
         for test, i in sim_scores[1:11]:
-            print('##############################################')
             purchase_history = np.where(self.user_idx==int(test))[0]
             user_game_list = []
             for j in self.game_idx[purchase_history]:
                 user_game_list.append(self.idx2game[j])
             sim_user_list.append([test, user_game_list])
-            print('User'+str(test)+' purchases')
-            print(', '.join([self.idx2game[game] for game in self.game_idx[purchase_history]]))
         return sim_user_list
 
     def eval_result(self):
-        print('##############################################')
         self.rec_games = np.argsort(-self.rec)
-        print('User #{0} recommendations ...'.format(self.idx2user[self.user2idx[0]]))
-        #print(user)
-        #purchase_history = np.where(train_matrix[user2idx[0], :] != 0)[0]
         purchase_history = np.where(self.user_idx==self.user2idx[0])[0]
         recommendations = self.rec_games[self.user2idx[0], :]
         new_recommendations = recommendations[~np.in1d(recommendations, purchase_history)][:self.k]    
-        print('Recommendations')
         recommend_list = []
         for i in new_recommendations:
             recommend_list.append(self.idx2game[i])
-        print(', '.join([self.idx2game[game] for game in new_recommendations]))
-        print('Actual purchases')
-        print(', '.join([self.idx2game[game] for game in self.game_idx[purchase_history]]))
-        print('Precision of {0}'.format(len(set(new_recommendations) & set(np.where(self.test_matrix[self.user2idx[0], :] != 0)[0])) / float(self.k)))
-        print('--------------------------------------')
         return recommend_list
 
     def train_data(self):
@@ -212,19 +199,7 @@ class CollaborateFiltering:
         lr = 0.05
         optimize = tf.train.AdagradOptimizer(learning_rate = lr).minimize(loss)
 
-        def top_k_precision(pred, mat, k, user_idx):
-            precisions = []
-            for user in user_idx:
-                rec = np.argsort(-pred[user, :]) # Found the top recommendation from the predictions        
-                top_k = rec[:k]
-                labels = mat[user, :].nonzero()[0]
-                precision = len(set(top_k) & set(labels)) / float(k) # Calculate the precisions from actual labels
-                precisions.append(precision)
-            return np.mean(precisions) 
-
         iterations = 100
-        #print(self.test_users_idx)
-        #print(self.test_matrix.shape)
         stop_signal = 0
         while(stop_signal == 0):
             sess = tf.Session()
@@ -236,13 +211,6 @@ class CollaborateFiltering:
                     if(mod_loss < 0):
                         break
                     mod_pred = pred_pref.eval(session=sess)
-                    train_precision = top_k_precision(mod_pred, self.train_matrix, self.k, val_users_idx)
-                    val_precision = top_k_precision(mod_pred, self.val_matrix, self.k, val_users_idx)
-                    print('Iterations {0}...'.format(i),
-                          'Training Loss {:.2f}...'.format(mod_loss),
-                          'Train Precision {:.3f}...'.format(train_precision),
-                          'Val Precision {:.3f}'.format(val_precision)
-                        )
                 if(i==99):
                     print('i is 99')
                     mod_loss = sess.run(loss, feed_dict = {pref: self.train_matrix,interactions: self.user_game_interactions})
@@ -251,6 +219,4 @@ class CollaborateFiltering:
 
         self.rec = pred_pref.eval(session=sess)
         self.user_feature = X_plus_bias.eval(session=sess)
-        test_precision = top_k_precision(self.rec, self.test_matrix, self.k, test_users_idx)
-        print('\n')
-        print('Test Precision{:.3f}'.format(test_precision))
+        
