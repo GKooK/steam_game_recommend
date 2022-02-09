@@ -3,6 +3,16 @@
 > https://www.kaggle.com/jwyang91/steam-games-2017-cleaned
 > https://www.kaggle.com/trolukovich/steam-games-complete-dataset 
 ## Usage Example
+To use Each Classes, tensorflow and scikit-surprise is required
+
+in CollaborateFiltering Class, You need to use add_new_user() method and train_data() method before trying eval_result() method and recommend_sim_user method()
+
+input of add_new_user is np.array type data that contains a certian user's playtime. np.array's index's meaning is the kind of game and you could check in CollaborateFiltering().idx2game_origin by type dict()
+train_data() trains and get the best feature matrix
+eval_result() returns the game list that is recommended to new user
+recommend_sim_user() returns list by simillar users that originate in user_feature matrix X as cosine_similarity
+
+
 ```python
 from makeit_to_class import CollaborateFiltering
 from item_based import ItemSVD
