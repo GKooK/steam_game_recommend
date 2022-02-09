@@ -1,5 +1,5 @@
 # steam_game_recommend
-> data set Used in Kaggle
+> data set Used in Kaggle<br>
 > https://www.kaggle.com/jwyang91/steam-games-2017-cleaned
 > https://www.kaggle.com/trolukovich/steam-games-complete-dataset 
 ## Usage Example
